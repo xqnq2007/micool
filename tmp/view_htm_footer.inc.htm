@@ -1,0 +1,164 @@
+<?php $db = G('db');?>
+<?php $starttime = G('starttime');?>
+<?php $time = G('time');?>
+<?php $ip = G('ip');?>
+<?php $useragent = G('useragent');?>
+<?php $forumlist = G('forumlist');?>
+<?php $forumarr = G('forumarr');?>
+<?php $fid = G('fid');?>
+<?php $conf = G('conf');?>
+<?php $static_version = $conf['static_version'];?>
+				
+			<?php
+
+echo setting_get('footer_start_htm');
+
+?>
+		
+			<?php  echo xn_debug_info(); ?>
+	
+		</div>
+	</main>
+	
+	
+	
+	<?php include _include(APP_PATH.'view/htm/footer_nav.inc.htm');?>
+	
+	
+	
+	<!--[if lt IE 9]>
+	<script>window.location = '<?php echo url('browser');?>';</script>
+	<![endif]-->
+	
+	
+	
+	<?php $browser = get__browser();?>
+	<?php if($browser['name'] == 'ie') { ?>
+	<script src="<?php echo $conf['view_url'];?>js/es6-shim.js<?php echo $static_version;?>"></script>
+	<?php } ?>
+	<script src="lang/<?php echo $conf['lang'];?>/bbs.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/jquery-3.1.0.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/popper.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/bootstrap.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/xiuno.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/bootstrap-plugin.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/async.js<?php echo $static_version;?>"></script>
+	<script src="<?php echo $conf['view_url'];?>js/form.js<?php echo $static_version;?>"></script>
+	<script>
+	var debug = DEBUG = <?php echo DEBUG; ?>;
+	var url_rewrite_on = <?php echo $conf['url_rewrite_on'];?>;
+	var forumarr = <?php echo xn_json_encode($forumarr);?>;
+	var fid = <?php echo $fid;?>;
+	var uid = <?php echo intval($uid);?>;
+	var gid = <?php echo intval($gid);?>;
+	</script>
+	<script src="<?php echo $conf['view_url'];?>js/bbs.js<?php echo $static_version;?>"></script>
+	<script>
+function xn_read_unread(tids, tid) {
+	
+	// 当前时间
+	var time = xn.time();
+	
+	// 多长时间内的主题为最新主题
+	var time_range = 86400 * 3;
+	
+	// 三天内的 tids
+	var recent_tids = $.pdata('recent_tids') || {};
+	
+	// 已读的 tids
+	var view_tids = $.pdata('view_tids') || {};
+	// 提取列表页的 tid
+	function fetch_recent_tids(tids) {
+		var changed = false;
+		$.each(tids, function(tid, last_date) {
+			if(time - last_date < time_range) {
+				recent_tids[tid] = last_date;
+				changed = true;
+			}
+		});
+		if(changed) $.pdata('recent_tids', recent_tids);
+	}
+	
+	// 清理最近的 tid
+	function gc_recent_tids() {
+		var changed = false;
+		$.each(recent_tids, function(tid, last_date) {
+			if(time - last_date > time_range) {
+				delete recent_tids[tid];
+				changed = true;
+			}
+		});
+		if(changed) $.pdata('recent_tids', recent_tids);
+	}
+	
+	function gc_view_tids() {
+		var changed = false;
+		$.each(view_tids, function(tid, last_date) {
+			if(!recent_tids[tid]) {
+				delete view_tids[tid];
+				changed = true;
+			}
+		});
+		if(changed) $.pdata('view_tids', view_tids);
+	}
+	
+	function save_view_tid(tid) {
+		if(!recent_tids[tid]) return;
+		view_tids[tid] = time;
+		$.pdata('view_tids', view_tids);
+	}
+	
+	if(tids) {
+		fetch_recent_tids(tids);
+		gc_recent_tids();
+		//gc_view_tids();
+	}
+	if(tid) save_view_tid(tid);
+	
+	// 三天内的主题标记为已读
+	
+	// 遍历主题列表，标记最近的，并且未读的为加粗
+
+	$('.thread').each(function() {
+		var jthis = $(this);
+		var tid = jthis.attr('tid') || jthis.data('tid');
+		if(recent_tids[tid] && recent_tids[tid] > xn.intval(view_tids[tid])) {
+			jthis.find('.subject').addClass('font-weight-bold');
+		}
+	});
+}
+
+</script>
+	
+</body>
+
+</html>
+<script>
+$('form').append('<input type="hidden" name="<?php echo setting_get('xn_anti_spam_key');?>" value="<?php echo setting_get('xn_anti_spam_key');?>" />');
+
+<?php $__rand = $time.'_'.md5($ip.$useragent.$conf['auth_key'].$time);?>
+$('form').append('<input type="hidden" name="__anti_xss__" value="<?php echo $__rand;?>" />');
+$.cookie('__anti_xss__', '<?php echo $__rand;?>');
+
+// 重新定义 $.xpost()，追加 postdata
+$.xpost_old = $.xpost;
+$.xpost = function(url, postdata, callback, progress_callback) {
+	if(xn.is_object(postdata)) {
+		postdata['__anti_xss__'] = '<?php echo $__rand;?>';
+	} else if(xn.is_string(postdata)) {
+		postdata += '&__anti_xss__=<?php echo $__rand;?>';
+	} else if(xn.is_function(postdata)) {
+		callback = postdata;
+		postdata = {__anti_xss__: '<?php echo $__rand;?>'};
+	}
+	return $.xpost_old(url, postdata, callback, progress_callback);
+};
+
+</script><?php
+
+echo setting_get('footer_end_htm');
+
+?>
+
+
+<?php echo cron_run();?>

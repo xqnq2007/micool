@@ -1,0 +1,21 @@
+<?php if($gid > 0 && $gid < 5) { ?>
+<div class="text-center">
+	<?php if(param(0) != 'thread') { ?>
+	<label class="mr-3">
+		<input type="checkbox" data-target='input[name="modtid"]' class="checkall mt-2 mr-2" value="" aria-label="<?php echo lang('checkall');?>" /><?php echo lang('checkall');?>
+	</label>
+	<?php } ?>
+	
+	<div class="btn-group mod-button" role="group" aria-label="">
+		
+		<button type="button" class="btn btn-secondary delete"><?php echo lang('delete');?></button>
+		
+		<button type="button" class="btn btn-secondary move"><?php echo lang('move');?></button>
+		
+		<button type="button" class="btn btn-secondary top"><?php echo lang('top');?></button>
+		
+		<button type="button" class="btn btn-secondary _close"><?php echo lang('close');?></button>
+		
+	</div>
+</div>
+<?php } ?>

@@ -1,0 +1,25 @@
+<footer class="text-muted small bg-dark py-4" id="footer">
+	<div class="container">
+		<div class="row">
+			<div class="col">
+				
+				<!-- Powered by <a href="http://bbs.xiuno.com/" target="_blank" class="text-muted"><b>Xiuno BBS <span></span></b></a> -->
+				酷米 <a href="http://www.mi.cool/" target="_blank" class="text-muted"><b>mi.cool <span>2018</span></b></a>
+				<?php
+
+echo setting_get('footer_footer_left_end_htm');
+
+?>
+			</div>
+			<div class="col text-right">
+				
+				Processed: <b><?php echo substr(microtime(1) - $starttime, 0, 5);?></b>, SQL: <b><?php echo count($db->sqls);?></b>
+				<?php
+
+echo setting_get('footer_footer_right_end_htm');
+
+?>
+			</div>
+		</div>
+	</div>
+</footer>
